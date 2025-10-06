@@ -56,6 +56,10 @@ main();
 
 function main() {
   const canvas = document.getElementById("mandelbrot-canvas");
+  const canvasDiv = document.getElementById("mandelbrot-canvas-div");
+  canvas.width = canvasDiv.clientWidth;
+  canvas.height = canvasDiv.clientHeight;
+
   const gl = canvas.getContext("webgl");
   if (gl === null) {
     alert("Unable to initalize WebGL.");
