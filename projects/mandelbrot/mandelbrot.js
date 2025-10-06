@@ -104,7 +104,13 @@ function main() {
     keys[event.key] = false;
   });
   window.addEventListener('wheel', (event) => {
+    event.preventDefault();
     zoom *= 1.0 - event.deltaY * 0.0002;
+  }, { passive: false });
+  window.addEventListener('resize', (event) =>  {
+    canvas.width = canvasDiv.clientWidth;
+    canvas.height = canvasDiv.clientHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
   });
 
   let lastTime = 0;
