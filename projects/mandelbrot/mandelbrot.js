@@ -63,6 +63,7 @@ function main() {
   }
 
   const shaderProgram = loadShaderProgram(gl, vsSource, fsSource);
+  gl.useProgram(shaderProgram);
 
   const positions = new Float32Array([
     -1.0, -1.0,
