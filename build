@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -eou pipefail
+
+for category in posts/*; do
+    for post in "$category"/*; do
+        if [ -d $post ]; then
+            outdir="srv/${post#posts/}"
+            mkdir -p "$outdir"
+            cp "$post"/* "$outdir"
+            sed '/{{ content }}/ {
+                r '"$post/index.html"'
+                d
+            }' templates/post.html > "$outdir/index.html"
+        fi
+    done
+done
