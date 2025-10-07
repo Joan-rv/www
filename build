@@ -2,15 +2,31 @@
 set -eou pipefail
 
 for category in posts/*; do
+    categorydir="srv/${category#posts/}"
+    mkdir -p "$categorydir"
+
+    listing=$(for post in "$category"/*; do
+        if [ -d "$post" ]; then
+            name=$(basename "$post")
+            echo "<li><a href=\"$name/\">$name</a></li>"
+        fi
+    done)
+    listing="<ul>$listing</ul>"
+
+    sed '/{{ content }}/ {
+        r /dev/stdin
+        d
+    }' templates/post.html > "$categorydir/index.html" <<< "$listing"
+
     for post in "$category"/*; do
         if [ -d $post ]; then
-            outdir="srv/${post#posts/}"
-            mkdir -p "$outdir"
-            cp "$post"/* "$outdir"
+            postdir="srv/${post#posts/}"
+            mkdir -p "$postdir"
+            cp "$post"/* "$postdir"
             sed '/{{ content }}/ {
                 r '"$post/index.html"'
                 d
-            }' templates/post.html > "$outdir/index.html"
+            }' templates/post.html > "$postdir/index.html"
         fi
     done
 done
