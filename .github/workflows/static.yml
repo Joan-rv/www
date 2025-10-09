@@ -31,8 +31,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
       - name: Build page
-        run: bash build
+        run: python build.py
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
