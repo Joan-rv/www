@@ -1,8 +1,10 @@
 import os
 import shutil
 
+
 def ensure_dir(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
+
 
 def with_template(content):
     with open("templates/post.html") as template:
@@ -13,20 +15,30 @@ def with_template(content):
             if "{{ content }}" in line:
                 indentation = len(line) - len(line.lstrip(" "))
         assert indentation, "Missing {{ content }} replacement in template"
-        content = "\n".join((" " * indentation + line for line in content.splitlines()))
+        content = "\n".join(
+            (" " * indentation + line for line in content.splitlines()))
         return template.replace(" " * indentation + "{{ content }}", content)
 
+
 def handle_dir(in_path, out_path):
+    os.makedirs(out_path, exist_ok=True)
+
     for resource in os.listdir(in_path):
         shutil.copy2(f"{in_path}/{resource}", f"{out_path}/{resource}")
 
     in_path += "/index.html"
     out_path += "/index.html"
     ensure_dir(out_path)
+
     with open(in_path) as input:
         content = input.read()
     with open(out_path, "w") as output:
         output.write(with_template(content))
+
+
+for file in os.listdir("static"):
+    ensure_dir(f"srv/{file}")
+    shutil.copy2(f"static/{file}", f"srv/{file}")
 
 for category in os.listdir("posts"):
     posts = []
@@ -41,8 +53,7 @@ for category in os.listdir("posts"):
             assert False, "Can only handle directories"
 
     list_items = "\n".join(
-        [f"  <li><a href=\"{post}\">{post}</a></li>" for post in posts]
-    )
+        (f"  <li><a href=\"{post}\">{post}</a></li>" for post in posts))
     listing = f"<ul>\n{list_items}\n</ul>"
     listing_path = f"srv/{category}/index.html"
     ensure_dir(listing_path)
