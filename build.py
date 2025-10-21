@@ -2,11 +2,11 @@ import os
 import shutil
 
 
-def ensure_dir(path):
+def ensure_dir(path: str):
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
 
-def with_template(content):
+def with_template(content: str) -> str:
     with open("templates/post.html") as template:
         template = template.read()
         template_lines = template.splitlines()
@@ -20,7 +20,7 @@ def with_template(content):
         return template.replace(" " * indentation + "{{ content }}", content)
 
 
-def handle_dir(in_path, out_path):
+def handle_dir(in_path: str, out_path: str):
     os.makedirs(out_path, exist_ok=True)
 
     for resource in os.listdir(in_path):
@@ -36,26 +36,30 @@ def handle_dir(in_path, out_path):
         output.write(with_template(content))
 
 
-for file in os.listdir("static"):
-    ensure_dir(f"srv/{file}")
-    shutil.copy2(f"static/{file}", f"srv/{file}")
+def main():
+    for file in os.listdir("static"):
+        ensure_dir(f"srv/{file}")
+        shutil.copy2(f"static/{file}", f"srv/{file}")
 
-for category in os.listdir("posts"):
-    posts = []
+    for category in os.listdir("posts"):
+        posts = []
 
-    for post in os.listdir(f"posts/{category}"):
-        posts.append(post)
-        out_path = f"srv/{category}/{post}"
-        in_path = f"posts/{category}/{post}"
-        if os.path.isdir(in_path):
-            handle_dir(in_path, out_path)
-        else:
-            assert False, "Can only handle directories"
+        for post in os.listdir(f"posts/{category}"):
+            posts.append(post)
+            out_path = f"srv/{category}/{post}"
+            in_path = f"posts/{category}/{post}"
+            if os.path.isdir(in_path):
+                handle_dir(in_path, out_path)
+            else:
+                assert False, "Can only handle directories"
 
-    list_items = "\n".join(
-        (f"  <li><a href=\"{post}\">{post}</a></li>" for post in posts))
-    listing = f"<ul>\n{list_items}\n</ul>"
-    listing_path = f"srv/{category}/index.html"
-    ensure_dir(listing_path)
-    with open(listing_path, "w") as listing_file:
-        listing_file.write(with_template(listing))
+        list_items = "\n".join(
+            (f"  <li><a href=\"{post}\">{post}</a></li>" for post in posts))
+        listing = f"<ul>\n{list_items}\n</ul>"
+        listing_path = f"srv/{category}/index.html"
+        ensure_dir(listing_path)
+        with open(listing_path, "w") as listing_file:
+            listing_file.write(with_template(listing))
+
+if __name__ == "__main__":
+    main()
