@@ -103,7 +103,7 @@ function main() {
   window.addEventListener('keyup', (event) => {
     keys[event.key] = false;
   });
-  window.addEventListener('wheel', (event) => {
+  canvas.addEventListener('wheel', (event) => {
     event.preventDefault();
     zoom *= 1.0 - event.deltaY * 0.0002;
   }, { passive: false });
