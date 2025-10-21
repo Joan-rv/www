@@ -55,7 +55,7 @@ def main():
 
         list_items = "\n".join(
             (f"  <li><a href=\"{post}\">{post}</a></li>" for post in posts))
-        listing = f"<ul>\n{list_items}\n</ul>"
+        listing = f"<h1>{category.capitalize()}</h1>\n<ul>\n{list_items}\n</ul>"
         listing_path = f"srv/{category}/index.html"
         ensure_dir(listing_path)
         with open(listing_path, "w") as listing_file:
