@@ -16,10 +16,6 @@ const fsSource = `
   uniform vec2 uOffset;
   uniform float uZoom;
 
-  vec3 gradient(vec3 start, vec3 end, float point) {
-      return start * (1.0 - point) + end * point;
-  }
-
   complex cx_sqr(complex v) {
       return complex(
           v.x * v.x - v.y * v.y,
@@ -34,7 +30,7 @@ const fsSource = `
           if (dot(z, z) > 2.0 * 2.0) {
               vec3 start = vec3(0.2666666, 0.00392156, 0.32941176);
               vec3 end = vec3(0.992156, 0.90588235, 0.14509803);
-              return gradient(start, end, float(i) / float(max_iters));
+              return mix(start, end, float(i) / float(max_iters));
           }
           z = cx_sqr(z) + c;
       }
@@ -44,8 +40,8 @@ const fsSource = `
   void main() {
       complex pos = vPosition / 2.0 + 0.5;
       // scale to be in mandelbrot coordinates
-      pos.x = pos.x * (2.0 + 0.47) - 2.0;
-      pos.y = pos.y * (1.12 + 1.12) - 1.12;
+      pos.x = pos.x * 2.5 - 2.0;
+      pos.y = pos.y * 2.5 - 1.25;
       pos /= uZoom;
       pos += uOffset;
       gl_FragColor = vec4(mandelbrot(pos), 1.0);
@@ -113,9 +109,65 @@ function main() {
     gl.viewport(0, 0, canvas.width, canvas.height);
   });
 
+  // Touch handling
+  let initialPinchDistance = null;
+  let lastTouchPosition = null;
+
+  canvas.addEventListener('touchstart', (event) => {
+    if (event.touches.length === 1) {
+      lastTouchPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    } else if (event.touches.length === 2) {
+      const dx = event.touches[0].clientX - event.touches[1].clientX;
+      const dy = event.touches[0].clientY - event.touches[1].clientY;
+      initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (event) => {
+    event.preventDefault(); // Prevent scrolling
+    if (event.touches.length === 1 && lastTouchPosition) {
+        const dx = event.touches[0].clientX - lastTouchPosition.x;
+        const dy = event.touches[0].clientY - lastTouchPosition.y;
+
+        const scaleX = 2.5 / canvas.width; 
+        const scaleY = 2.5 / canvas.height;
+
+        offset[0] -= dx * scaleX / zoom;
+        offset[1] += dy * scaleY / zoom;
+
+        lastTouchPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+
+    } else if (event.touches.length === 2 && initialPinchDistance) {
+      const dx = event.touches[0].clientX - event.touches[1].clientX;
+      const dy = event.touches[0].clientY - event.touches[1].clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (initialPinchDistance > 0) {
+        const pinchScale = distance / initialPinchDistance;
+        zoom *= pinchScale;
+      }
+
+      initialPinchDistance = distance;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', (event) => {
+    if (event.touches.length < 2) {
+        initialPinchDistance = null;
+    }
+    if (event.touches.length === 1) {
+       lastTouchPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    } else if (event.touches.length === 0) {
+       lastTouchPosition = null;
+    }
+  });
+
   let lastTime = 0;
 
   function draw(timestamp) {
+    if (lastTime === 0) {
+      lastTime = timestamp;
+    }
     let dt = (timestamp - lastTime) / 1000.0;
     lastTime = timestamp;
 
