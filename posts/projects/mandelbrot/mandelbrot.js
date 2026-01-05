@@ -99,6 +99,9 @@ function main() {
   window.addEventListener('keyup', (event) => {
     keys[event.key] = false;
   });
+  window.addEventListener('blur', () => {
+    keys = {};
+  });
   canvas.addEventListener('wheel', (event) => {
     event.preventDefault();
     zoom *= 1.0 - event.deltaY * 0.0002;
@@ -160,6 +163,40 @@ function main() {
     } else if (event.touches.length === 0) {
        lastTouchPosition = null;
     }
+  });
+
+  // Mouse drag handling
+  let isDragging = false;
+  let lastMousePosition = null;
+
+  canvas.addEventListener('mousedown', (event) => {
+    isDragging = true;
+    lastMousePosition = { x: event.clientX, y: event.clientY };
+  });
+
+  canvas.addEventListener('mousemove', (event) => {
+    if (isDragging && lastMousePosition) {
+      const dx = event.clientX - lastMousePosition.x;
+      const dy = event.clientY - lastMousePosition.y;
+
+      const scaleX = 2.5 / canvas.width;
+      const scaleY = 2.5 / canvas.height;
+
+      offset[0] -= dx * scaleX / zoom;
+      offset[1] += dy * scaleY / zoom;
+
+      lastMousePosition = { x: event.clientX, y: event.clientY };
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+    lastMousePosition = null;
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    isDragging = false;
+    lastMousePosition = null;
   });
 
   let lastTime = 0;
