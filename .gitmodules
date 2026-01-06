@@ -1,0 +1,3 @@
+[submodule "posts/projects/otcirc/otcirc"]
+	path = static/otcirc
+	url = https://github.com/Joan-rv/otcirc.git

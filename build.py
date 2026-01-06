@@ -38,13 +38,7 @@ def is_full_html(content: str) -> bool:
 
 
 def handle_dir(in_path: str, out_path: str, template: str):
-    os.makedirs(out_path, exist_ok=True)
-
-    for resource in os.listdir(in_path):
-        src = os.path.join(in_path, resource)
-        dst = os.path.join(out_path, resource)
-        if os.path.isfile(src):
-            shutil.copy2(src, dst)
+    shutil.copytree(in_path, out_path, ignore=shutil.ignore_patterns(".git"), dirs_exist_ok=True)
 
     index_in = os.path.join(in_path, "index.html")
     index_out = os.path.join(out_path, "index.html")
@@ -66,11 +60,8 @@ def main():
 
     template = load_template()
 
-    for file in os.listdir("static"):
-        src = os.path.join("static", file)
-        dst = os.path.join("srv", file)
-        if os.path.isfile(src):
-            shutil.copy2(src, dst)
+    if os.path.exists("static"):
+        shutil.copytree("static", "srv", ignore=shutil.ignore_patterns(".git"), dirs_exist_ok=True)
 
     if os.path.exists("posts"):
         for category in os.listdir("posts"):
