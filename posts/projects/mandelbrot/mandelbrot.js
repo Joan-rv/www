@@ -66,12 +66,7 @@ function main() {
   gl.useProgram(shaderProgram);
 
   const positions = new Float32Array([
-    -1.0, -1.0,
-    -1.0,  1.0,
-     1.0,  1.0,
-     1.0,  1.0,
-     1.0, -1.0,
-    -1.0, -1.0,
+    -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0,
   ]);
   const vbo = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -81,11 +76,11 @@ function main() {
   gl.vertexAttribPointer(aPositionLoc, 2, gl.FLOAT, false, 0, 0);
 
   let offset = [0.0, 0.0];
-  const uOffsetLoc = gl.getUniformLocation(shaderProgram, 'uOffset');
+  const uOffsetLoc = gl.getUniformLocation(shaderProgram, "uOffset");
   gl.uniform2f(uOffsetLoc, ...offset);
 
   let zoom = 1.0;
-  const uZoomLoc = gl.getUniformLocation(shaderProgram, 'uZoom');
+  const uZoomLoc = gl.getUniformLocation(shaderProgram, "uZoom");
   gl.uniform1f(uZoomLoc, zoom);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -93,20 +88,24 @@ function main() {
 
   let keys = {};
 
-  window.addEventListener('keydown', (event) => {
+  window.addEventListener("keydown", (event) => {
     keys[event.key] = true;
   });
-  window.addEventListener('keyup', (event) => {
+  window.addEventListener("keyup", (event) => {
     keys[event.key] = false;
   });
-  window.addEventListener('blur', () => {
+  window.addEventListener("blur", () => {
     keys = {};
   });
-  canvas.addEventListener('wheel', (event) => {
-    event.preventDefault();
-    zoom *= 1.0 - event.deltaY * 0.0002;
-  }, { passive: false });
-  window.addEventListener('resize', (event) =>  {
+  canvas.addEventListener(
+    "wheel",
+    (event) => {
+      event.preventDefault();
+      zoom *= 1.0 - event.deltaY * 0.0002;
+    },
+    { passive: false },
+  );
+  window.addEventListener("resize", (event) => {
     canvas.width = canvasDiv.clientWidth;
     canvas.height = canvasDiv.clientHeight;
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -116,52 +115,68 @@ function main() {
   let initialPinchDistance = null;
   let lastTouchPosition = null;
 
-  canvas.addEventListener('touchstart', (event) => {
-    if (event.touches.length === 1) {
-      lastTouchPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-    } else if (event.touches.length === 2) {
-      const dx = event.touches[0].clientX - event.touches[1].clientX;
-      const dy = event.touches[0].clientY - event.touches[1].clientY;
-      initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
-    }
-  }, { passive: false });
+  canvas.addEventListener(
+    "touchstart",
+    (event) => {
+      if (event.touches.length === 1) {
+        lastTouchPosition = {
+          x: event.touches[0].clientX,
+          y: event.touches[0].clientY,
+        };
+      } else if (event.touches.length === 2) {
+        const dx = event.touches[0].clientX - event.touches[1].clientX;
+        const dy = event.touches[0].clientY - event.touches[1].clientY;
+        initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+      }
+    },
+    { passive: false },
+  );
 
-  canvas.addEventListener('touchmove', (event) => {
-    event.preventDefault(); // Prevent scrolling
-    if (event.touches.length === 1 && lastTouchPosition) {
+  canvas.addEventListener(
+    "touchmove",
+    (event) => {
+      event.preventDefault(); // Prevent scrolling
+      if (event.touches.length === 1 && lastTouchPosition) {
         const dx = event.touches[0].clientX - lastTouchPosition.x;
         const dy = event.touches[0].clientY - lastTouchPosition.y;
 
-        const scaleX = 2.5 / canvas.width; 
+        const scaleX = 2.5 / canvas.width;
         const scaleY = 2.5 / canvas.height;
 
-        offset[0] -= dx * scaleX / zoom;
-        offset[1] += dy * scaleY / zoom;
+        offset[0] -= (dx * scaleX) / zoom;
+        offset[1] += (dy * scaleY) / zoom;
 
-        lastTouchPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+        lastTouchPosition = {
+          x: event.touches[0].clientX,
+          y: event.touches[0].clientY,
+        };
+      } else if (event.touches.length === 2 && initialPinchDistance) {
+        const dx = event.touches[0].clientX - event.touches[1].clientX;
+        const dy = event.touches[0].clientY - event.touches[1].clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-    } else if (event.touches.length === 2 && initialPinchDistance) {
-      const dx = event.touches[0].clientX - event.touches[1].clientX;
-      const dy = event.touches[0].clientY - event.touches[1].clientY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+        if (initialPinchDistance > 0) {
+          const pinchScale = distance / initialPinchDistance;
+          zoom *= pinchScale;
+        }
 
-      if (initialPinchDistance > 0) {
-        const pinchScale = distance / initialPinchDistance;
-        zoom *= pinchScale;
+        initialPinchDistance = distance;
       }
+    },
+    { passive: false },
+  );
 
-      initialPinchDistance = distance;
-    }
-  }, { passive: false });
-
-  canvas.addEventListener('touchend', (event) => {
+  canvas.addEventListener("touchend", (event) => {
     if (event.touches.length < 2) {
-        initialPinchDistance = null;
+      initialPinchDistance = null;
     }
     if (event.touches.length === 1) {
-       lastTouchPosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+      lastTouchPosition = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY,
+      };
     } else if (event.touches.length === 0) {
-       lastTouchPosition = null;
+      lastTouchPosition = null;
     }
   });
 
@@ -169,12 +184,12 @@ function main() {
   let isDragging = false;
   let lastMousePosition = null;
 
-  canvas.addEventListener('mousedown', (event) => {
+  canvas.addEventListener("mousedown", (event) => {
     isDragging = true;
     lastMousePosition = { x: event.clientX, y: event.clientY };
   });
 
-  canvas.addEventListener('mousemove', (event) => {
+  canvas.addEventListener("mousemove", (event) => {
     if (isDragging && lastMousePosition) {
       const dx = event.clientX - lastMousePosition.x;
       const dy = event.clientY - lastMousePosition.y;
@@ -182,19 +197,19 @@ function main() {
       const scaleX = 2.5 / canvas.width;
       const scaleY = 2.5 / canvas.height;
 
-      offset[0] -= dx * scaleX / zoom;
-      offset[1] += dy * scaleY / zoom;
+      offset[0] -= (dx * scaleX) / zoom;
+      offset[1] += (dy * scaleY) / zoom;
 
       lastMousePosition = { x: event.clientX, y: event.clientY };
     }
   });
 
-  canvas.addEventListener('mouseup', () => {
+  canvas.addEventListener("mouseup", () => {
     isDragging = false;
     lastMousePosition = null;
   });
 
-  canvas.addEventListener('mouseleave', () => {
+  canvas.addEventListener("mouseleave", () => {
     isDragging = false;
     lastMousePosition = null;
   });
@@ -208,19 +223,18 @@ function main() {
     let dt = (timestamp - lastTime) / 1000.0;
     lastTime = timestamp;
 
-    if (keys['w']) {
-      offset[1] += 0.5 * dt / zoom;
+    if (keys["w"]) {
+      offset[1] += (0.5 * dt) / zoom;
     }
-    if (keys['s']) {
-      offset[1] -= 0.5 * dt / zoom;
+    if (keys["s"]) {
+      offset[1] -= (0.5 * dt) / zoom;
     }
-    if (keys['d']) {
-      offset[0] += 0.5 * dt / zoom;
+    if (keys["d"]) {
+      offset[0] += (0.5 * dt) / zoom;
     }
-    if (keys['a']) {
-      offset[0] -= 0.5 * dt / zoom;
+    if (keys["a"]) {
+      offset[0] -= (0.5 * dt) / zoom;
     }
-
 
     gl.uniform2f(uOffsetLoc, ...offset);
     gl.uniform1f(uZoomLoc, zoom);
