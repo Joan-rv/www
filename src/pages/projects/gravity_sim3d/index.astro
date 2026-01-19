@@ -26,8 +26,18 @@ import Layout from '../../../layouts/Layout.astro';
           return document.getElementById("canvas");
         })(),
       };
+      function fullscreen() {
+        if (canvas.requestFullscreen) {
+          canvas.requestFullscreen();
+        } else if (canvas.webkitRequestFullscreen) {
+          canvas.webkitRequestFullscreen();
+        } else {
+          alert("Browser doesn't support fullscreen");
+        }
+      }
     </script>
     <script async src="gravity_sim3d.js" is:inline></script>
     <br />
+    <button onclick="fullscreen()">Fullscreen</button>
   </div>
 </Layout>
