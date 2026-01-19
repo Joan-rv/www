@@ -1,11 +1,20 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+const projectFiles = import.meta.glob('./*/index.astro', { eager: true });
+const projects = Object.keys(projectFiles).map((path) => {
+  const folder = path.split('/')[1];
+  return {
+    url: `/projects/${folder}/`,
+    name: folder,
+  };
+});
 ---
 
 <Layout>
   <h1>Projects</h1>
   <ul>
-    <li><a href="/projects/mandelbrot/">mandelbrot</a></li>
-    <li><a href="/projects/otcirc/">otcirc</a></li>
+    {projects.map((project) => (
+      <li><a href={project.url}>{project.name}</a></li>
+    ))}
   </ul>
 </Layout>
