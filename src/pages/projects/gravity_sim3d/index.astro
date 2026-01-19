@@ -1,0 +1,33 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout>
+  <style>
+    #canvas {
+      background-color: white;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+    }
+    .centered {
+      text-align: center;
+    }
+  </style>
+  <h1>Gravity simulation in 3D</h1>
+  <p>A 3D gravity simulation built in C++ using WASM and WebGL2.
+  Look with the mouse, move using WASD and press M to open the control window.
+  Click on the canvas to lock the mouse pointer.</p>
+  <p>Try adding a planet with position (0, 2, 0), initial velocity (1.5, 0, 0), radius 0.05 and density 1.</p>
+  <div class="centered">
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <script type="text/javascript" is:inline>
+      var Module = {
+        canvas: (() => {
+          return document.getElementById("canvas");
+        })(),
+      };
+    </script>
+    <script async src="gravity_sim3d.js" is:inline></script>
+    <br />
+  </div>
+</Layout>
