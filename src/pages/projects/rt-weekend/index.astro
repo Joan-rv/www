@@ -1,0 +1,24 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout>
+  <style>
+    #canvas {
+      background-color: white;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+    }
+    #button {
+      margin-bottom: 12px;
+    }
+    .centered {
+      text-align: center;
+    }
+  </style>
+  <div class="centered">
+    <button onclick="buttonPress()" id="button">Render</button>
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <script src="index.js" is:inline></script>
+  </div>
+</Layout>
